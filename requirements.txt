@@ -1,0 +1,7 @@
+apex==0.9.10dev
+numpy==1.24.2
+Pillow==10.2.0
+scipy==1.12.0
+tensorboard_logger==0.1.0
+torch==1.11.0
+torchvision==0.12.0
