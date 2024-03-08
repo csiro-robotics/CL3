@@ -416,170 +416,6 @@ def set_model(opt):
     return model, criterion
 
 
-def compute_reconstructed_feature(feature1_, feature2_, labels1=None, labels2=None, dim=20):
-        # assert feature1_.shape == feature2_.shape
-        batch_size = feature1_.shape[0]
-        feature1_ = feature1_ + torch.zeros_like(feature1_).normal_(0, 0.01)
-        feature2_ = feature2_ + torch.zeros_like(feature2_).normal_(0, 0.01)
-
-        # print(feature1_.shape, feature2_.shape)
-        if labels2 is not None:
-            labels_unique = torch.unique(labels2)
-            label_ind1 = [[i for i, value in enumerate(labels1) if value == x] for x in labels_unique]
-            label_ind2 = [[i for i, value in enumerate(labels2) if value == x] for x in labels_unique]
- 
-            hyperplane_x = []
-            hyperplane_y = []
-            dist = []
-
-            for label_ind in range(len(label_ind2)):
-                # print(len(labels), label)
-                feature1 = feature1_[label_ind1[label_ind]]
-                feature2 = feature2_[label_ind2[label_ind]]
-                # print("Original input shape:{}".format(feature1.shape))
-		
-                samples1 = torch.transpose(feature1, 0, 1)
-                samples2 = torch.transpose(feature2, 0, 1)
-                # print("SVD input shape:{}".format(samples1.shape))
-		
-                u_x, s_x, v_x = torch.linalg.svd(samples1, full_matrices=False)
-                u_y, s_y, v_y = torch.linalg.svd(samples2, full_matrices=False)
-                # print("Original subspaces shape:{}, selected:{}, final subspaces shape:{}".format(u_x.shape, dim, u_x[:, 0:dim].shape))
-		
-                dist_per_class = torch.frobenius_norm(torch.mm(torch.mm(u_x[:, 0:dim], torch.transpose(u_x[:, 0:dim], 0, 1)), samples1) - torch.mm(torch.mm(u_y[:, 0:dim], torch.transpose(u_y[:, 0:dim], 0, 1)), samples1)) ** 2
-                ## dist_per_class = (1/feature1.shape[0])*(torch.frobenius_norm(torch.mm(torch.transpose(u_x[:, 0:dim], 0, 1), u_y[:, 0:dim])) ** 2)
-                dist.append(dist_per_class)
-
-                # u_x, s_x, v_x = torch.linalg.svd(feature1, full_matrices=False)
-                # u_y, s_y, v_y = torch.linalg.svd(feature2, full_matrices=False)
-
-                # hyperplane_x.append(u_x[:,0:dim])
-                # hyperplane_y.append(u_y[:,0:dim])
-                # print(torch.mm(u_x, u_x.T))
-                # dist.append(torch.frobenius_norm(torch.mm(u_x[:, 0:dim], torch.transpose(u_y[:, 0:dim], 0, 1))))
-                
-            return torch.tensor(dist).mean()
-
-            # combined_hyperplane_x = torch.stack(hyperplane_x, dim=0)
-            # combined_hyperplane_y = torch.stack(hyperplane_y, dim=0)
-            # print(combined_hyperplane_x.shape, combined_hyperplane_y.shape)
-            # dist = torch.frobenius_norm(torch.mm(torch.transpose(combined_hyperplane_x, 0, 1), combined_hyperplane_y))
-            # return dist
-
-        feature1 = torch.transpose(feature1_, 0, 1)
-        feature2 = torch.transpose(feature2_, 0, 1)
-        u_x, s_x, v_x = torch.linalg.svd(feature1, full_matrices=False)
-        u_y, s_y, v_y = torch.linalg.svd(feature2, full_matrices=False)
-        # print(u_x.size(), u_y.size())
-        return torch.frobenius_norm(torch.mm(torch.mm(u_x[:, 0:dim], torch.transpose(u_x[:, 0:dim], 0, 1)), feature1) - torch.mm(torch.mm(u_y[:, 0:dim], torch.transpose(u_y[:, 0:dim], 0, 1)), feature1)) ** 2
-        #### return (1/batch_size)*(torch.frobenius_norm(torch.mm(torch.mm(u_x[:, 0:dim], torch.transpose(u_x[:, 0:dim], 0, 1)), feature1) - torch.mm(torch.mm(u_y[:, 0:dim], torch.transpose(u_y[:, 0:dim], 0, 1)), feature1)) ** 2)
-
-        # print(torch.mm(u_x, u_x.T))
-        # u_x, s_x, v_x = torch.linalg.svd(feature1_, full_matrices=False)
-        # u_y, s_y, v_y = torch.linalg.svd(feature2_, full_matrices=False)
-        # return torch.frobenius_norm(torch.mm(u_x[:, 0:dim], torch.transpose(u_y[:, 0:dim], 0, 1)))
-
-
-def compute_subspace_projection(feature, labels=None, dim=100):
-        batch_size = feature.shape[0]
-        # print(feature.shape)
-        dim = feature.shape[1]//4
-        feature = feature + torch.zeros_like(feature).normal_(0, 0.01)
-        u = {}
-        projected_feature = torch.zeros(dim, batch_size)
-        
-        if labels is not None:
-            labels_unique = torch.unique(labels)
-            label_inds = [[i for i, value in enumerate(labels) if value == x] for x in labels_unique]
-
-            for label_ind in range(len(labels_unique)):
-                ind = label_inds[label_ind]
-                samples = feature[ind]
-		
-                samples = torch.transpose(samples, 0, 1)
-		
-                u_x, s_x, v_x = torch.linalg.svd(samples, full_matrices=False)
-                projected_feature[ind] = torch.mm(torch.transpose(u_x[:, 0:dim], 0, 1), samples)
-                
-            return torch.transpose(projected_feature, 0, 1)
-            
-        samples = torch.transpose(feature, 0, 1)
-        u_x, s_x, v_x = torch.linalg.svd(samples, full_matrices=False)
-        projected_feature = torch.mm(torch.transpose(u_x[:, 0:dim], 0, 1), samples)
-        return torch.transpose(projected_feature, 0, 1)
-
-
-def update_old_model(net, old_net, m_=.001):
-    net.eval()
-    for param_q, param_k in zip(net.parameters(), old_net.parameters()):
-        param_k.data = param_k.data * (1. - m_) + param_q.data * m_
-    net.train()
-
-
-# Features Sparsification loss defined in SDR: https://arxiv.org/abs/2103.06342
-class FeaturesSparsificationLoss(nn.Module):
-    def __init__(self, lfs_normalization='softmax', lfs_shrinkingfn='squared', lfs_loss_fn_touse='entropy', mask=False, reduction='mean'):
-        super().__init__()
-        self.mask = mask
-        self.lfs_normalization = lfs_normalization
-        self.lfs_shrinkingfn = lfs_shrinkingfn
-        self.lfs_loss_fn_touse = lfs_loss_fn_touse
-        self.eps = 1e-15
-        self.reduction = reduction
-
-    def forward(self, features, labels, val=False):
-        outputs = torch.tensor(0.)
-
-        if not val:
-            
-            if self.lfs_normalization == 'L1':
-                features_norm = F.normalize(features, p=1, dim=1)
-            elif self.lfs_normalization == 'L2':
-                features_norm = F.normalize(features, p=2, dim=1)
-            elif self.lfs_normalization == 'max_foreachfeature':
-                features_norm = features / (torch.max(features, dim=1, keepdim=True).values + self.eps)
-            elif self.lfs_normalization == 'max_maskedforclass':
-                labels = labels.unsqueeze(dim=1)
-                labels_down = labels  # (F.interpolate(input=labels.double(), size=(features.shape[2], features.shape[3]), mode='nearest')).long()
-                features_norm = torch.zeros_like(features)
-                classes = torch.unique(labels_down)
-                if classes[-1] == 0:
-                    classes = classes[:-1]
-                for cl in classes:
-                    cl_mask = labels_down == cl
-                    features_norm += (features / (torch.max(features[cl_mask.expand(-1, features.shape[1], -1, -1)]) + self.eps)) * cl_mask.float()
-            elif self.lfs_normalization == 'max_overall':
-                features_norm = features / (torch.max(features) + self.eps)
-            elif self.lfs_normalization == 'softmax':
-                features_norm = torch.softmax(features, dim=1)
-
-            if features_norm.sum() > 0:
-                if self.lfs_shrinkingfn == 'squared':
-                    shrinked_value = torch.sum(features_norm**2, dim=1, keepdim=True)
-                if self.lfs_shrinkingfn == 'power3':
-                    shrinked_value = torch.sum(features_norm ** 3, dim=1, keepdim=True)
-                elif self.lfs_shrinkingfn == 'exponential':
-                    shrinked_value = torch.sum(torch.exp(features_norm), dim=1, keepdim=True)
-
-                summed_value = torch.sum(features_norm, dim=1, keepdim=True)
-
-                if self.lfs_loss_fn_touse == 'ratio':
-                    outputs = shrinked_value / (summed_value + self.eps)
-                elif self.lfs_loss_fn_touse == 'lasso':  # NB: works at features space directly
-                    outputs = torch.norm(features, 1) / 2  # simple L1 (Lasso) regularization
-                elif self.lfs_loss_fn_touse == 'max_minus_ratio':
-                    # TODO: other loss functions to be considered
-                    # outputs = summed_value - shrinked_value / summed_value
-                    pass
-                elif self.lfs_loss_fn_touse == 'entropy':  # NB: works only with probabilities (i.e. with L1 or softmax as normalization)
-                    outputs = torch.sum(- features_norm * torch.log(features_norm + 1e-10), dim=1)
-
-        if self.reduction == 'mean':
-            return outputs.mean()
-        elif self.reduction == 'sum':
-            return outputs.sum()
-
-
 def train(train_loader, model, model2, criterion, sparsity_criterion, optimizer, epoch, opt):
 
 
@@ -611,20 +447,10 @@ def train(train_loader, model, model2, criterion, sparsity_criterion, optimizer,
 
         # compute loss
         features, encoded = model(images, return_feat=True)
-
-        # Asym SupCon
-        # f1, f2 = torch.split(F.normalize(encoded, dim=1), [bsz, bsz], dim=0)
-        # projected_f1 = compute_subspace_projection(f1)
-        # projected_f2 = compute_subspace_projection(f2)
-        # features = torch.cat([projected_f1.unsqueeze(1), projected_f2.unsqueeze(1)], dim=1)
         
         f1, f2 = torch.split(features, [bsz, bsz], dim=0)
         features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
 
-        # loss = criterion(features, labels, target_labels=list(range(opt.target_task*opt.cls_per_task, (opt.target_task+1)*opt.cls_per_task)))
-        
-        # loss = criterion(features, labels, target_labels=list(range((opt.target_task+1)*opt.cls_per_task)), contrast_mode='all')
-        
         if opt.target_task == 0: loss = criterion(features, labels, target_labels=list(range((opt.target_task+1)*opt.cls_per_task)), contrast_mode='all')
         # loss = criterion(features, labels, target_labels=list(range(opt.target_task*opt.cls_per_task, (opt.target_task+1)*opt.cls_per_task)), contrast_mode='all')
         
@@ -632,33 +458,18 @@ def train(train_loader, model, model2, criterion, sparsity_criterion, optimizer,
         if opt.target_task > 0:
             with torch.no_grad():
                 features_prev_task, encoded_prev_task = model2(images, return_feat=True)  # Used
-                # f1_old, f2_old = torch.split(features_prev_task, [bsz, bsz], dim=0)  # Used
-                # encoded_old = model2.encoder(images)
-                
-                # f1_old, f2_old = torch.split(F.normalize(encoded_prev_task, dim=1), [bsz, bsz], dim=0)
-                # projected_f1_old = compute_subspace_projection(f1_old)
-                # projected_f2_old = compute_subspace_projection(f2_old)
-            # features_prev_task = F.normalize(model2.head(encoded_old.detach()), dim=1)
+                # f1_old, f2_old = torch.split(features_prev_task, [bsz, bsz], dim=0)  # Used   
+
             f1_old, f2_old = torch.split(features_prev_task, [bsz, bsz], dim=0)
-            # features_combined_new = torch.cat([projected_f1.unsqueeze(1), projected_f2.unsqueeze(1)], dim=0)
-            # features_combined_old = torch.cat([projected_f1_old.unsqueeze(1).detach(), projected_f2_old.unsqueeze(1).detach()], dim=0)
             features_combined_new = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=0)
             features_combined_old = torch.cat([f1_old.unsqueeze(1), f2_old.unsqueeze(1)], dim=0)
             features_combined = torch.cat([features_combined_new, features_combined_old.detach()], dim=1)
             loss_distill = criterion(features_combined, torch.cat((labels, labels)), target_labels=list(range((opt.target_task+1)*opt.cls_per_task)), contrast_mode='one')
-            # loss_distill = (-logits2 * torch.log(logits1)).sum(1).mean()
-            #closs += opt.distill_power * loss_distill
+
             loss = loss_distill
-            # loss = loss + loss_distill
-            # loss /= 2
             
-            # loss = (1. - opt.dist_weight)*loss + opt.dist_weight*loss_distill
 
             distill.update(loss_distill.item(), bsz)
-
-        # loss += sparsity_criterion(encoded, torch.cat((labels, labels)))
-        # loss += (torch.norm(encoded, 1) / 2).mean()  # Used
-        # loss += FeaturesSparsificationLoss(lfs_normalization='softmax', lfs_loss_fn_touse='entropy')(encoded, torch.cat((labels, labels)))  # Latest, Works Better!
         
         # update metric
         losses.update(loss.item(), bsz)
