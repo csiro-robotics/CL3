@@ -1,9 +1,12 @@
 # CL3: Generalization of Contrastive Loss for Lifelong Learning
 
-<p align="center">
+<p align="center" style="text-align: center;">
     <img src="figures/cl3.png"/>
-    Code for [CL3: Generalization of Contrastive Loss for Lifelong Learning](https://arxiv.org/abs/2106.14413). 
+    Code for <a style='ext-align: center;' href="https://arxiv.org/abs/2106.14413">CL3: Generalization of Contrastive Loss for Lifelong Learning</a>.
 </p>
+
+
+<!-- Code for [CL3: Generalization of Contrastive Loss for Lifelong Learning](https://arxiv.org/abs/2106.14413). -->
 
 
 # Abstract
