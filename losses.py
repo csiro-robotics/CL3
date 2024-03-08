@@ -100,11 +100,14 @@ class SupConLoss(nn.Module):
         # loss
         loss = - (self.temperature / self.base_temperature) * mean_log_prob_pos
 
-        curr_class_mask = torch.zeros_like(labels)
-        for tc in target_labels:
-            curr_class_mask += (labels == tc)
-        curr_class_mask = curr_class_mask.view(-1).to(device)
-        loss = curr_class_mask * loss.view(anchor_count, batch_size)
+        # Not Important as we consider all classes till current task
+        # curr_class_mask = torch.zeros_like(labels)
+        # for tc in target_labels:
+        #     curr_class_mask += (labels == tc)
+        # curr_class_mask = curr_class_mask.view(-1).to(device)
+        # loss = curr_class_mask * loss.view(anchor_count, batch_size)
+
+        loss = loss.view(anchor_count, batch_size)
 
         if reduction == 'mean':
             loss = loss.mean()
