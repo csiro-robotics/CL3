@@ -1,7 +1,28 @@
 # CL3: Generalization of Contrastive Loss for Lifelong Learning
 
-Code for [CL3: Generalization of Contrastive Loss for Lifelong Learning](https://arxiv.org/abs/2106.14413). 
-Our code is based on the implementation of [Co^2L: Contrastive Continual Learning](https://github.com/chaht01/co2l). 
+<p align="center">
+    <img src="figures/cl3.png"/>
+    Code for [CL3: Generalization of Contrastive Loss for Lifelong Learning](https://arxiv.org/abs/2106.14413). 
+</p>
+
+
+# Abstract
+Lifelong learning portrays learning gradually in nonstationary environments and emulates
+the process of human learning, which is efficient, robust, and able to learn new concepts incrementally
+from sequential experience. To equip neural networks with such a capability, one needs to overcome
+the problem of catastrophic forgetting, the phenomenon of forgetting past knowledge while learning
+new concepts. In this work, we propose a novel knowledge distillation algorithm that makes use of
+contrastive learning to help a neural network to preserve its past knowledge while learning from a
+series of tasks. Our proposed generalized form of contrastive distillation strategy tackles catastrophic
+forgetting of old knowledge, and minimizes semantic drift by maintaining a similar embedding space,
+as well as ensures compactness in feature distribution to accommodate novel tasks in a current model.
+Our comprehensive study shows that our method achieves improved performances in the challenging
+class-incremental, task-incremental, and domain-incremental learning for supervised scenarios.
+
+
+# Repository Contributions
+
+This repository contains the implementation of the paper 'CL3: Generalization of Contrastive Loss for Lifelong Learning'. 
 
 If you find this code useful, please reference in our paper:
 
@@ -18,9 +39,9 @@ If you find this code useful, please reference in our paper:
 }
 ```
 
-# Instruction
+# Getting Started
 
-Different from other continual learning methods, CL3 needs pre-training part for learning representations since CL3 is a contrastive representation learning based distillation strategy. Thus, you can get the results reported on our paper from linear evaluation with pre-trained representations. Please follow below two commands. 
+Unlike other methods for lifelong learning, CL3 demands a preliminary training phase for discrimiative feature learning and adaptation of feature space to adapt novel knowledge, driven by its adoption of a contrastive representation learning-based distillation strategy. Therefore, the results presented in our paper can be obtained via linear evaluation using representations extracted from pre-trained  backbone. Please follow the instructions outlined below.
 
 ## Representation Learning
 ```
@@ -35,3 +56,7 @@ python main_linear_buffer.py --learning_rate 1 --target_task 4 --ckpt ./save_ran
 # Issue
 
 If you have troulbe with NaN loss while training representation learning, you may find solutions from [SupCon issue page](https://github.com/HobbitLong/SupContrast/issues). Please check your training works perfectly on SupCon first. 
+
+
+# Acknowledgement
+We would like to acknowledge the authors of [Co^2L: Contrastive Continual Learning](https://github.com/chaht01/co2l) for their excellent codebase which has been used as a starting point for this project.
