@@ -27,7 +27,7 @@ from util import TwoCropTransform, AverageMeter
 from util import adjust_learning_rate, warmup_learning_rate
 from util import set_optimizer, save_model, load_model
 from networks.mlp import SupConMLP
-from losses_negative_only import SupConLoss
+from losses import SupConLoss
 
 
 try:
