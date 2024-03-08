@@ -5,10 +5,6 @@
     Code for <a style='ext-align: center;' href="https://arxiv.org/abs/2106.14413">CL3: Generalization of Contrastive Loss for Lifelong Learning</a>.
 </p>
 
-
-<!-- Code for [CL3: Generalization of Contrastive Loss for Lifelong Learning](https://arxiv.org/abs/2106.14413). -->
-
-
 # Abstract
 Lifelong learning portrays learning gradually in nonstationary environments and emulates
 the process of human learning, which is efficient, robust, and able to learn new concepts incrementally
