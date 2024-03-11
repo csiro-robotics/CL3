@@ -2,7 +2,7 @@
 
 <p align="center" style="text-align: center;">
     <img src="figures/cl3.png"/>
-    Code for <a style='ext-align: center;' href="https://arxiv.org/abs/2106.14413">CL3: Generalization of Contrastive Loss for Lifelong Learning</a>.
+    Code for <a style='ext-align: center;' href="www.mdpi.com/2313-433X/9/12/259">CL3: Generalization of Contrastive Loss for Lifelong Learning</a>.
 </p>
 
 
